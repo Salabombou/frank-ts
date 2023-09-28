@@ -22,13 +22,12 @@ const submissionHandler: EventHandler<Message> = {
         const components = frank.utils.submissionComponents()
 
         const submissionOptions = {
-            content: message.content,
+            content: `${message.content} <t:${message.createdTimestamp}:f>` ,
             files: message.attachments.map((attachment) => attachment.url),
         } as MessageCreateOptions
 
         const pendingMessage = await frank.utils.channels.approval.send({
-            content: message.content,
-            files: message.attachments.map((attachment) => attachment.url),
+            ...submissionOptions,
             components,
         })
         
