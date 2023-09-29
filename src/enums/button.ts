@@ -1,5 +1,5 @@
 export enum Button {
-    ApproveSink = 'approve',
+    ApproveSink = 'approveSink',
     ApproveNsfw = 'approveNSFW',
     ApproveSerious = 'approveSerious',
     Undo = 'undo',
