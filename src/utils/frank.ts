@@ -44,18 +44,34 @@ export class FrankUtils {
 
     async init() {
         this.loadEvents()
-        this.channels.approval = (await this.frank.channels.fetch(
-            this.config.APPROVALS_CHANNEL_ID,
-        )) as TextChannel
-        this.channels.nsfw = (await this.frank.channels.fetch(
-            this.config.NSFW_CHANNEL_ID,
-        )) as TextChannel
-        this.channels.serious = (await this.frank.channels.fetch(
-            this.config.SERIOUS_CHANNEL_ID,
-        )) as TextChannel
-        this.channels.sink = (await this.frank.channels.fetch(
-            this.config.SINK_CHANNEL_ID,
-        )) as TextChannel
+
+        // Get the approval channel
+        await this.frank.channels
+            .fetch(this.config.APPROVALS_CHANNEL_ID)
+            .then((channel) => {
+                this.channels.approval = channel as TextChannel
+            })
+
+        // Get the NSFW channel
+        await this.frank.channels
+            .fetch(this.config.NSFW_CHANNEL_ID)
+            .then((channel) => {
+                this.channels.nsfw = channel as TextChannel
+            })
+
+        // Get the serious channel
+        await this.frank.channels
+            .fetch(this.config.SERIOUS_CHANNEL_ID)
+            .then((channel) => {
+                this.channels.serious = channel as TextChannel
+            })
+
+        // Get the sink channel
+        await this.frank.channels
+            .fetch(this.config.SINK_CHANNEL_ID)
+            .then((channel) => {
+                this.channels.sink = channel as TextChannel
+            })
     }
 
     submissionComponents(submitted?: boolean) {
@@ -81,11 +97,6 @@ export class FrankUtils {
             .setLabel('Deny')
             .setStyle(ButtonStyle.Danger)
             .setDisabled(submitted)
-        const undoButton = new ButtonBuilder()
-            .setCustomId(Button.Undo)
-            .setLabel('Undo')
-            .setStyle(ButtonStyle.Secondary)
-            .setDisabled(false)
 
         const components = [
             new ActionRowBuilder<ButtonBuilder>().setComponents(
@@ -96,6 +107,12 @@ export class FrankUtils {
             ),
         ]
         if (submitted) {
+            const undoButton = new ButtonBuilder()
+                .setCustomId(Button.Undo)
+                .setLabel('Undo')
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(false)
+
             components.unshift(
                 new ActionRowBuilder<ButtonBuilder>().setComponents(undoButton),
             )

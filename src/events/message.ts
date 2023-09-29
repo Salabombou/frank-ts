@@ -22,7 +22,7 @@ const submissionHandler: EventHandler<Message> = {
         const components = frank.utils.submissionComponents()
 
         const submissionOptions = {
-            content: `${message.content} <t:${message.createdTimestamp}:f>` ,
+            content: `${message.content} <t:${message.createdTimestamp}:f>`,
             files: message.attachments.map((attachment) => attachment.url),
         } as MessageCreateOptions
 
@@ -30,14 +30,14 @@ const submissionHandler: EventHandler<Message> = {
             ...submissionOptions,
             components,
         })
-        
+
         message.react('☑️')
 
         const collector = pendingMessage.createMessageComponentCollector({
             time: 200_000_000,
         })
 
-        let submittedMessage: Message<true>
+        let submittedMessage: Message<true> | undefined
 
         collector.on('collect', async (interaction) => {
             collector.resetTimer({ time: 1600_000 })
@@ -47,7 +47,7 @@ const submissionHandler: EventHandler<Message> = {
             let submitted: boolean
 
             if (interaction.customId === Button.Undo) {
-                submittedMessage.delete()
+                submittedMessage?.delete()
                 submitted = false
                 reactionEmote = '↩️'
             } else if (interaction.customId === Button.Deny) {
@@ -55,8 +55,8 @@ const submissionHandler: EventHandler<Message> = {
                 reactionEmote = '⛔'
             } else {
                 submitted = true
-                let submissionChannel: TextChannel
 
+                let submissionChannel: TextChannel
                 switch (interaction.customId) {
                     case Button.ApproveSink:
                         submissionChannel = frank.utils.channels.sink
@@ -71,20 +71,24 @@ const submissionHandler: EventHandler<Message> = {
                         reactionEmote = '✔️'
                         break
                 }
-                submittedMessage =
-                    await submissionChannel!.send(submissionOptions)
+                await submissionChannel!.send(submissionOptions).then((msg) => {
+                    submittedMessage = msg
+                })
             }
-
+            
             Promise.all(
-                message.reactions.cache.map((r) => r.users.remove(frank.user!)),
-            ).finally(() =>
+                message.reactions.cache.map((reaction) => {
+                    reaction.users.remove(frank.user!)
+                }),
+            ).finally(() => {
                 message.react(
                     interaction.customId === Button.Undo ? '☑️' : reactionEmote,
-                ),
-            )
-            pendingMessage.reactions
-                .removeAll()
-                .finally(() => pendingMessage.react(reactionEmote))
+                )
+            })
+
+            pendingMessage.reactions.removeAll().finally(() => {
+                pendingMessage.react(reactionEmote)
+            })
             pendingMessage.edit({
                 components: frank.utils.submissionComponents(submitted),
             })

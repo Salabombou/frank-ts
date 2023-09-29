@@ -22,7 +22,7 @@ async function main() {
         ],
         partials: [Partials.Channel, Partials.Message, Partials.Reaction],
     })
-    frank.login(process.env.FRANK_TOKEN as string)
+    frank.login()
 
     frank.once(Events.ClientReady, (c) => {
         console.clear()

@@ -4,9 +4,9 @@ import { FrankUtils } from 'utils/frank'
 export class Frank extends Client {
     public readonly utils = new FrankUtils(this)
 
-    login(token?: string) {
+    login() {
         return super
-            .login(token)
+            .login(this.utils.config.FRANK_TOKEN)
             .catch((error) => {
                 throw error
             })
