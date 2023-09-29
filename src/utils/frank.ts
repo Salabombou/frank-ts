@@ -74,29 +74,29 @@ export class FrankUtils {
             })
     }
 
-    submissionComponents(submitted?: boolean) {
-        submitted = !!submitted // force boolean
+    submissionComponents(undo?: boolean) {
+        undo = !!undo // force boolean
 
         const approveButton = new ButtonBuilder()
             .setCustomId(Button.ApproveSink)
             .setLabel('Approve')
             .setStyle(ButtonStyle.Success)
-            .setDisabled(submitted)
+            .setDisabled(undo)
         const approveNsfwButton = new ButtonBuilder()
             .setCustomId(Button.ApproveNsfw)
             .setLabel('NSFW')
             .setStyle(ButtonStyle.Secondary)
-            .setDisabled(submitted)
+            .setDisabled(undo)
         const approveSeriousButton = new ButtonBuilder()
             .setCustomId(Button.ApproveSerious)
             .setLabel('Serious')
             .setStyle(ButtonStyle.Secondary)
-            .setDisabled(submitted)
+            .setDisabled(undo)
         const denyButton = new ButtonBuilder()
             .setCustomId(Button.Deny)
             .setLabel('Deny')
             .setStyle(ButtonStyle.Danger)
-            .setDisabled(submitted)
+            .setDisabled(undo)
 
         const components = [
             new ActionRowBuilder<ButtonBuilder>().setComponents(
@@ -106,7 +106,7 @@ export class FrankUtils {
                 denyButton,
             ),
         ]
-        if (submitted) {
+        if (undo) {
             const undoButton = new ButtonBuilder()
                 .setCustomId(Button.Undo)
                 .setLabel('Undo')

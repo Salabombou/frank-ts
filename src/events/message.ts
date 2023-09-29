@@ -40,21 +40,21 @@ const submissionHandler: EventHandler<Message> = {
         let submittedMessage: Message<true> | undefined
 
         collector.on('collect', async (interaction) => {
-            collector.resetTimer({ time: 1600_000 })
+            collector.resetTimer({ time: 600_000 })
             interaction.deferUpdate()
 
             let reactionEmote: string
-            let submitted: boolean
+            let undo: boolean
 
             if (interaction.customId === Button.Undo) {
                 submittedMessage?.delete()
-                submitted = false
+                undo = false
                 reactionEmote = '↩️'
             } else if (interaction.customId === Button.Deny) {
-                submitted = true
+                undo = true
                 reactionEmote = '⛔'
             } else {
-                submitted = true
+                undo = true
 
                 let submissionChannel: TextChannel
                 switch (interaction.customId) {
@@ -90,7 +90,7 @@ const submissionHandler: EventHandler<Message> = {
                 pendingMessage.react(reactionEmote)
             })
             pendingMessage.edit({
-                components: frank.utils.submissionComponents(submitted),
+                components: frank.utils.submissionComponents(undo),
             })
         })
 
