@@ -94,8 +94,8 @@ const submissionHandler: EventHandler<Message> = {
             })
         })
 
-        collector.on('dispose', async (collected) => {
-            collected.editReply({ components: [] })
+        collector.on('end', async () => {
+            pendingMessage.edit({ components: [] })
         })
     },
 }
