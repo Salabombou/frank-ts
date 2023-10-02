@@ -1,10 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-    Events,
-    Message,
-    MessageCreateOptions,
-    TextChannel,
-} from 'discord.js'
+import { Events, Message, MessageCreateOptions, TextChannel } from 'discord.js'
 import { EventHandler, Frank } from 'structs/discord'
 import { Button } from 'enums'
 
@@ -19,7 +14,9 @@ const submissionHandler: EventHandler<Message> = {
         const components = frank.utils.submissionComponents()
 
         const submissionOptions = {
-            content: `${message.content} <t:${message.createdTimestamp}:f>`,
+            content: `${message.content} <t:${Math.round(
+                message.createdTimestamp / 1000,
+            )}:f>`,
             files: message.attachments.map((attachment) => attachment.url),
         } as MessageCreateOptions
 
@@ -72,7 +69,7 @@ const submissionHandler: EventHandler<Message> = {
                     submittedMessage = msg
                 })
             }
-            
+
             Promise.all(
                 message.reactions.cache.map((reaction) => {
                     reaction.users.remove(frank.user!)
