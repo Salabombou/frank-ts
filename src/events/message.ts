@@ -72,7 +72,7 @@ const submissionHandler: EventHandler<Message> = {
 
             Promise.all(
                 message.reactions.cache.map((reaction) => {
-                    reaction.users.remove(frank.user!)
+                    return reaction.users.remove(frank.user!)
                 }),
             ).finally(() => {
                 message.react(
