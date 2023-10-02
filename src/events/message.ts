@@ -13,10 +13,10 @@ const submissionHandler: EventHandler<Message> = {
 
         const components = frank.utils.submissionComponents()
 
+        const timestamp = Math.round(message.createdTimestamp / 1000)
+
         const submissionOptions = {
-            content: `${message.content} <t:${Math.round(
-                message.createdTimestamp / 1000,
-            )}:f>`,
+            content: `${message.content} <t:${timestamp}:f>`,
             files: message.attachments.map((attachment) => attachment.url),
         } as MessageCreateOptions
 
@@ -41,9 +41,9 @@ const submissionHandler: EventHandler<Message> = {
             let undo: boolean
 
             if (interaction.customId === Button.Undo) {
-                submittedMessage?.delete()
                 undo = false
                 reactionEmote = '↩️'
+                submittedMessage?.delete()
             } else if (interaction.customId === Button.Deny) {
                 undo = true
                 reactionEmote = '⛔'
