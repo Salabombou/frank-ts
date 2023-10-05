@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Events, Message, MessageCreateOptions, TextChannel } from 'discord.js'
+import {
+    AttachmentBuilder,
+    Events,
+    Message,
+    MessageCreateOptions,
+    TextChannel,
+} from 'discord.js'
 import { EventHandler, Frank } from 'structs/discord'
 import { Button } from 'enums'
 
@@ -17,13 +23,18 @@ const submissionHandler: EventHandler<Message> = {
 
         const submissionOptions = {
             content: `${message.content} <t:${timestamp}:f>`,
-            files: message.attachments.map((attachment) => attachment.url),
+            files: message.attachments.map((attachment) => {
+                const ext = attachment.name.split('.').splice(1).join('.')
+                const filename =
+                    ext === '' ? attachment.id : `${attachment.id}.${ext}`
+
+                return new AttachmentBuilder(attachment.url).setName(filename)
+            }),
+            components,
         } as MessageCreateOptions
 
-        const pendingMessage = await frank.utils.channels.approval.send({
-            ...submissionOptions,
-            components,
-        })
+        // prettier-ignore
+        const pendingMessage = await frank.utils.channels.approval.send(submissionOptions)
 
         message.react('☑️')
 
