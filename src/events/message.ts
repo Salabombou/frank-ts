@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
     AttachmentBuilder,
+    AttachmentData,
     Events,
     Message,
     MessageCreateOptions,
@@ -17,24 +18,24 @@ const submissionHandler: EventHandler<Message> = {
 
         const frank = message.client as Frank
 
-        const components = frank.utils.submissionComponents()
-
         const timestamp = Math.round(message.createdTimestamp / 1000)
 
         const submissionOptions = {
             content: `${message.content} <t:${timestamp}:f>`,
-            files: message.attachments.map((attachment) => {
-                const ext = attachment.name.split('.').splice(1).join('.')
-                const filename =
-                    ext === '' ? attachment.id : `${attachment.id}.${ext}`
+            files: message.attachments.map((a) => {
+                const ext = a.name.split('.').splice(1).join('.')
+                const filename = ext === '' ? a.id : `${a.id}.${ext}`
 
-                return new AttachmentBuilder(attachment.url).setName(filename)
+                return new AttachmentBuilder(a.url, a as AttachmentData)
+                    .setName(filename)
+                    .setSpoiler(a.spoiler)
             }),
-            components,
         } as MessageCreateOptions
 
+        const components = frank.utils.submissionComponents()
+
         // prettier-ignore
-        const pendingMessage = await frank.utils.channels.approval.send(submissionOptions)
+        const pendingMessage = await frank.utils.channels.approval.send({...submissionOptions, components} )
 
         message.react('☑️')
 
