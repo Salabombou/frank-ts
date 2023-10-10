@@ -32,7 +32,10 @@ const submissionHandler: EventHandler<Message> = {
                     .setName(filename)
                     .setSpoiler(a.spoiler)
                 }),
-                ...message.stickers.map(s => s.url)
+                ...message.stickers.map(s => {
+                    return new AttachmentBuilder(s.url, s as AttachmentData)
+                        .setName(`sticker.png`)
+                })
             ],
             allowedMentions: {
                 parse: [],
