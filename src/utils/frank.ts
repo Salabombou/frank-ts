@@ -3,6 +3,7 @@ import {
     ActionRowBuilder,
     ButtonStyle,
     TextChannel,
+    ReactionManager,
 } from 'discord.js'
 import { Frank } from 'structs/discord'
 import { Button } from 'enums'
@@ -119,5 +120,13 @@ export class FrankUtils {
         }
 
         return components
+    }
+
+    reactionsRemoveAllSelf(reactions: ReactionManager) {
+        return Promise.all(
+            reactions.cache.map((reaction) => {
+                return reaction.users.remove(this.frank.user!)
+            }),
+        )
     }
 }

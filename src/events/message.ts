@@ -82,19 +82,21 @@ const submissionHandler: EventHandler<Message> = {
                 })
             }
 
-            Promise.all(
-                message.reactions.cache.map((reaction) => {
-                    return reaction.users.remove(frank.user!)
-                }),
-            ).finally(() => {
-                message.react(
-                    interaction.customId === Button.Undo ? '☑️' : reactionEmote,
-                )
-            })
+            frank.utils
+                .reactionsRemoveAllSelf(message.reactions)
+                .finally(() => {
+                    message.react(
+                        interaction.customId === Button.Undo
+                            ? '☑️'
+                            : reactionEmote,
+                    )
+                })
 
-            pendingMessage.reactions.removeAll().finally(() => {
-                pendingMessage.react(reactionEmote)
-            })
+            frank.utils
+                .reactionsRemoveAllSelf(pendingMessage.reactions)
+                .finally(() => {
+                    pendingMessage.react(reactionEmote)
+                })
             pendingMessage.edit({
                 components: frank.utils.submissionComponents(undo),
             })
