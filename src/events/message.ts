@@ -5,6 +5,7 @@ import {
     Events,
     Message,
     MessageCreateOptions,
+    Sticker,
     TextChannel,
 } from 'discord.js'
 import { EventHandler, Frank } from 'structs/discord'
@@ -22,14 +23,20 @@ const submissionHandler: EventHandler<Message> = {
 
         const submissionOptions = {
             content: `${message.content} <t:${timestamp}:f>`,
-            files: message.attachments.map((a) => {
+            files: [
+                ...message.attachments.map((a) => {
                 const ext = a.name.split('.').splice(1).join('.')
                 const filename = ext === '' ? a.id : `${a.id}.${ext}`
 
                 return new AttachmentBuilder(a.url, a as AttachmentData)
                     .setName(filename)
                     .setSpoiler(a.spoiler)
-            }),
+                }),
+                ...message.stickers.map(s => s.url)
+            ],
+            allowedMentions: {
+                parse: [],
+            },
         } as MessageCreateOptions
 
         const components = frank.utils.submissionComponents()
