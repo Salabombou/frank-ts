@@ -46,7 +46,7 @@ const submissionHandler: EventHandler<Message> = {
             tripcode = generateTripcode(username, tripcode)
 
             authEmbed = new EmbedBuilder()
-                .setDescription(`✅ signed by ${username} !${tripcode}`)
+                .setDescription(`✅ signed by \`${username} !${tripcode}\``)
                 .setColor(0x272727)
 
             message.content = message.content.replace(possibleTripcode, '')
