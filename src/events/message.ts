@@ -1,21 +1,6 @@
-import {
-    AttachmentBuilder,
-    AttachmentData,
-    EmbedBuilder,
-    Events,
-    Message,
-    MessageCreateOptions,
-    TextChannel,
-} from 'discord.js'
-import * as crypto from 'crypto'
+import { Events, Message, TextChannel } from 'discord.js'
 import { EventHandler, Frank } from 'structs/discord'
 import { Button } from 'enums'
-
-function generateTripcode(password: string): string {
-    const hash = crypto.createHash('sha512').update(password).digest('hex')
-    const tripcode = hash.slice(0, 10)
-    return tripcode
-}
 
 const submissionHandler: EventHandler<Message> = {
     name: Events.MessageCreate,
@@ -23,57 +8,15 @@ const submissionHandler: EventHandler<Message> = {
         if (message.author.bot) return
         if (!message.channel.isDMBased()) return
 
+        // Wait 2 seconds for the message's possible embeds to be cached
+        await new Promise<void>((resolve) => {
+            setTimeout(() => resolve(), 2000)
+        })
+        message = await message.fetch(true)
+
         const frank = message.client as Frank
-        const timestamp = Math.round(message.createdTimestamp / 1000)
-        const possibleTripcode = message.content
-            .split(' ')
-            .pop()
-            ?.split('\n')
-            ?.pop()
-            ?.trim()
 
-        let authEmbed: EmbedBuilder | undefined
-
-        if (possibleTripcode?.includes('#')) {
-            const lastIndex = possibleTripcode.lastIndexOf('#')
-
-            const username = possibleTripcode.slice(0, lastIndex).trim()
-            const tripcode = generateTripcode(
-                possibleTripcode.slice(lastIndex + 1).trim(),
-            )
-
-            authEmbed = new EmbedBuilder()
-                .setDescription(`✅ signed by ${username} !${tripcode}`)
-                .setColor(0x272727)
-            message.content = message.content
-                .replace(possibleTripcode, '')
-                .trim()
-        }
-
-        const submissionOptions = {
-            content: `${message.content}\n<t:${timestamp}:f>`,
-            files: [
-                ...message.attachments.map((a) => {
-                    const ext = a.name.split('.').splice(1).join('.')
-                    const filename = ext === '' ? a.id : `${a.id}.${ext}`
-
-                    return new AttachmentBuilder(a.url, a as AttachmentData)
-                        .setName(filename)
-                        .setSpoiler(a.spoiler)
-                }),
-                ...message.stickers.map((s) => {
-                    return new AttachmentBuilder(
-                        s.url,
-                        s as AttachmentData,
-                    ).setName(`sticker.png`)
-                }),
-            ],
-            embeds: authEmbed ? [authEmbed] : undefined,
-            allowedMentions: {
-                parse: [],
-            },
-        } as MessageCreateOptions
-
+        const submissionOptions = await frank.utils.submissionOptions(message)
         const components = frank.utils.submissionComponents()
 
         // prettier-ignore
@@ -86,13 +29,12 @@ const submissionHandler: EventHandler<Message> = {
         })
 
         let submittedMessage: Message<true> | undefined
+        let reactionEmote: string
+        let undo: boolean
 
         collector.on('collect', async (interaction) => {
             collector.resetTimer({ time: 600_000 })
             interaction.deferUpdate()
-
-            let reactionEmote: string
-            let undo: boolean
 
             if (interaction.customId === Button.Undo) {
                 undo = false
@@ -139,6 +81,7 @@ const submissionHandler: EventHandler<Message> = {
                 .finally(() => {
                     pendingMessage.react(reactionEmote)
                 })
+
             pendingMessage.edit({
                 components: frank.utils.submissionComponents(undo),
             })
@@ -146,6 +89,21 @@ const submissionHandler: EventHandler<Message> = {
 
         collector.on('end', () => {
             pendingMessage.edit({ components: [] })
+            switch (reactionEmote) {
+                case '☑️':
+                case '↩️':
+                    frank.utils
+                        .reactionsRemoveAllSelf(message.reactions)
+                        .finally(() => {
+                            message.react('💤')
+                        })
+                    frank.utils
+                        .reactionsRemoveAllSelf(pendingMessage.reactions)
+                        .finally(() => {
+                            pendingMessage.react('💤')
+                        })
+                    break
+            }
         })
     },
 }

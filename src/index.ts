@@ -3,15 +3,6 @@ import { Frank } from 'structs/discord'
 import { Events } from 'discord.js'
 
 async function main() {
-    // only log errors in development to avoid leaking of identifiable information
-    const errorHandler =
-        process.env.NODE_ENV === 'production'
-            ? () => {}
-            : (error: unknown) => console.error(error)
-
-    process.on('unhandledRejection', errorHandler)
-    process.on('uncaughtException', errorHandler)
-
     const frank = new Frank({
         intents: [
             GatewayIntentBits.DirectMessages,
@@ -27,6 +18,15 @@ async function main() {
     frank.once(Events.ClientReady, (c) => {
         console.clear()
         console.log(`Frank is ready as ${c.user.tag}`)
+
+        // only log errors in development to avoid leaking of identifiable information
+        const errorHandler =
+            process.env.NODE_ENV === 'production'
+                ? () => {}
+                : (error: unknown) => console.error(error)
+
+        process.on('unhandledRejection', errorHandler)
+        process.on('uncaughtException', errorHandler)
     })
 }
 main()
