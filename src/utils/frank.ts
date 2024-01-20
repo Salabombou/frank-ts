@@ -10,8 +10,9 @@ import {
     AttachmentData,
     MessageCreateOptions,
     EmbedType,
+    Guild,
 } from 'discord.js'
-import url from 'url'
+import { URL } from 'url'
 import path from 'path'
 import { Frank } from 'structs/discord'
 import { Button } from 'enums'
@@ -20,6 +21,7 @@ import * as crypto from 'crypto'
 import { join } from 'path'
 import { readdirSync } from 'fs'
 import { EventHandler } from 'structs/discord'
+import axios from 'axios'
 
 export class FrankUtils {
     private readonly frank: Frank
@@ -138,13 +140,54 @@ export class FrankUtils {
         )
     }
 
+    private maxUploadSize(premiumTier: number): number {
+        let maxUploadSize: number
+        switch (premiumTier) {
+            case 0:
+                maxUploadSize = 25
+                break
+            case 1:
+            case 2:
+                maxUploadSize = 50
+                break
+            case 3:
+                maxUploadSize = 100
+                break
+            default:
+                maxUploadSize = 25
+                break
+        }
+        return maxUploadSize * 1024 * 1024
+    }
+
+    private async fileUploadable(url: string): Promise<boolean> {
+        const { hostname } = new URL(url)
+        if (
+            hostname !== 'cdn.discordapp.com' &&
+            hostname !== 'media.discordapp.net'
+        ) {
+            return false
+        }
+
+        const contentLength = await axios
+            .head(url)
+            .then((r) =>
+                parseInt(r.headers['content-length'] || '0'),
+            )
+        const maxUploadSize = this.maxUploadSize(
+            this.channels.approval.guild.premiumTier,
+        )
+        
+        return contentLength <= maxUploadSize
+    }
+
     private generateTripcode(password: string): string {
         const hash = crypto.createHash('sha512').update(password).digest('hex')
         const tripcode = hash.slice(0, 10)
         return tripcode
     }
 
-    submissionOptions(message: Message): MessageCreateOptions {
+    async submissionOptions(message: Message): Promise<MessageCreateOptions> {
         const files: AttachmentBuilder[] = []
         const embeds: EmbedBuilder[] = []
         const allowedMentions = {
@@ -194,26 +237,6 @@ export class FrankUtils {
                 ).setName(`sticker.png`)
             }),
         )
-
-        for (const embed of message.embeds) {
-            // Deprecated, might need to figure something out incase discord removes these
-            switch (embed.data.type) {
-                case EmbedType.Image:
-                case EmbedType.Video:
-                    const pathname = new url.URL(embed.data.url!).pathname
-                    const filename = path.basename(pathname)
-                    const ext = filename.split('.').splice(1).join('.')
-
-                    files.push(
-                        new AttachmentBuilder(
-                            embed.data.url!,
-                            embed as AttachmentData,
-                        ).setName(`embed.${ext}`),
-                    )
-                    content = content.replace(embed.data.url!, '')
-                    break
-            }
-        }
 
         // Parse content
         content += `\n<t:${timestamp}:f>`

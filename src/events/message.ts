@@ -8,12 +8,6 @@ const submissionHandler: EventHandler<Message> = {
         if (message.author.bot) return
         if (!message.channel.isDMBased()) return
 
-        // Wait 2 seconds for the message's possible embeds to be cached
-        await new Promise<void>((resolve) => {
-            setTimeout(() => resolve(), 2000)
-        })
-        message = await message.fetch(true)
-
         const frank = message.client as Frank
 
         const submissionOptions = await frank.utils.submissionOptions(message)
