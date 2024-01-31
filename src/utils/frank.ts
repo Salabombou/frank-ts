@@ -203,22 +203,30 @@ export class FrankUtils {
             ?.split('\n')
             ?.pop()
             ?.trim()
+        do {
+            if (possibleTripcode?.includes('#')) {
+                try {
+                    new URL(possibleTripcode)
+                } catch {
+                    break;
+                }
+                
+                const lastIndex = possibleTripcode.lastIndexOf('#')
+    
+                const username = possibleTripcode.slice(0, lastIndex).trim()
+                const tripcode = this.generateTripcode(
+                    possibleTripcode.slice(lastIndex + 1).trim(),
+                )
+    
+                embeds.push(
+                    new EmbedBuilder()
+                        .setDescription(`✅ signed by ${username} !${tripcode}`)
+                        .setColor(0x272727),
+                )
+                content = content.replace(possibleTripcode, '').trim()
+            }
+        } while(false);
 
-        if (possibleTripcode?.includes('#')) {
-            const lastIndex = possibleTripcode.lastIndexOf('#')
-
-            const username = possibleTripcode.slice(0, lastIndex).trim()
-            const tripcode = this.generateTripcode(
-                possibleTripcode.slice(lastIndex + 1).trim(),
-            )
-
-            embeds.push(
-                new EmbedBuilder()
-                    .setDescription(`✅ signed by ${username} !${tripcode}`)
-                    .setColor(0x272727),
-            )
-            content = content.replace(possibleTripcode, '').trim()
-        }
 
         // Parse files
         files.push(
