@@ -140,47 +140,6 @@ export class FrankUtils {
         )
     }
 
-    private maxUploadSize(premiumTier: number): number {
-        let maxUploadSize: number
-        switch (premiumTier) {
-            case 0:
-                maxUploadSize = 25
-                break
-            case 1:
-            case 2:
-                maxUploadSize = 50
-                break
-            case 3:
-                maxUploadSize = 100
-                break
-            default:
-                maxUploadSize = 25
-                break
-        }
-        return maxUploadSize * 1024 * 1024
-    }
-
-    private async fileUploadable(url: string): Promise<boolean> {
-        const { hostname } = new URL(url)
-        if (
-            hostname !== 'cdn.discordapp.com' &&
-            hostname !== 'media.discordapp.net'
-        ) {
-            return false
-        }
-
-        const contentLength = await axios
-            .head(url)
-            .then((r) =>
-                parseInt(r.headers['content-length'] || '0'),
-            )
-        const maxUploadSize = this.maxUploadSize(
-            this.channels.approval.guild.premiumTier,
-        )
-        
-        return contentLength <= maxUploadSize
-    }
-
     private generateTripcode(password: string): string {
         const hash = crypto.createHash('sha512').update(password).digest('hex')
         const tripcode = hash.slice(0, 10)
@@ -208,16 +167,16 @@ export class FrankUtils {
                 try {
                     new URL(possibleTripcode)
                 } catch {
-                    break;
+                    break
                 }
-                
+
                 const lastIndex = possibleTripcode.lastIndexOf('#')
-    
+
                 const username = possibleTripcode.slice(0, lastIndex).trim()
                 const tripcode = this.generateTripcode(
                     possibleTripcode.slice(lastIndex + 1).trim(),
                 )
-    
+
                 embeds.push(
                     new EmbedBuilder()
                         .setDescription(`✅ signed by ${username} !${tripcode}`)
@@ -225,8 +184,7 @@ export class FrankUtils {
                 )
                 content = content.replace(possibleTripcode, '').trim()
             }
-        } while(false);
-
+        } while (false)
 
         // Parse files
         files.push(

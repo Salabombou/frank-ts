@@ -26,59 +26,70 @@ const submissionHandler: EventHandler<Message> = {
         let reactionEmote: string
         let undo: boolean
 
+        let isSending = false
+
         collector.on('collect', async (interaction) => {
-            collector.resetTimer({ time: 600_000 })
-            interaction.deferUpdate()
+            if (isSending) return
 
-            if (interaction.customId === Button.Undo) {
-                undo = false
-                reactionEmote = '↩️'
-                submittedMessage?.delete()
-            } else if (interaction.customId === Button.Deny) {
-                undo = true
-                reactionEmote = '⛔'
-            } else {
-                undo = true
+            isSending = true
+            try {
+                collector.resetTimer({ time: 600_000 })
+                interaction.deferUpdate()
 
-                let submissionChannel: TextChannel
-                switch (interaction.customId) {
-                    case Button.ApproveSink:
-                        submissionChannel = frank.utils.channels.sink
-                        reactionEmote = '✅'
-                        break
-                    case Button.ApproveNsfw:
-                        submissionChannel = frank.utils.channels.nsfw
-                        reactionEmote = '🔞'
-                        break
-                    case Button.ApproveSerious:
-                        submissionChannel = frank.utils.channels.serious
-                        reactionEmote = '✔️'
-                        break
+                if (interaction.customId === Button.Undo) {
+                    undo = false
+                    reactionEmote = '↩️'
+                    submittedMessage?.delete()
+                } else if (interaction.customId === Button.Deny) {
+                    undo = true
+                    reactionEmote = '⛔'
+                } else {
+                    undo = true
+
+                    let submissionChannel: TextChannel
+                    switch (interaction.customId) {
+                        case Button.ApproveSink:
+                            submissionChannel = frank.utils.channels.sink
+                            reactionEmote = '✅'
+                            break
+                        case Button.ApproveNsfw:
+                            submissionChannel = frank.utils.channels.nsfw
+                            reactionEmote = '🔞'
+                            break
+                        case Button.ApproveSerious:
+                            submissionChannel = frank.utils.channels.serious
+                            reactionEmote = '✔️'
+                            break
+                    }
+                    await submissionChannel!
+                        .send(submissionOptions)
+                        .then((msg) => {
+                            submittedMessage = msg
+                        })
                 }
-                await submissionChannel!.send(submissionOptions).then((msg) => {
-                    submittedMessage = msg
+
+                frank.utils
+                    .reactionsRemoveAllSelf(message.reactions)
+                    .finally(() => {
+                        message.react(
+                            interaction.customId === Button.Undo
+                                ? '☑️'
+                                : reactionEmote,
+                        )
+                    })
+
+                frank.utils
+                    .reactionsRemoveAllSelf(pendingMessage.reactions)
+                    .finally(() => {
+                        pendingMessage.react(reactionEmote)
+                    })
+
+                pendingMessage.edit({
+                    components: frank.utils.submissionComponents(undo),
                 })
+            } finally {
+                isSending = false
             }
-
-            frank.utils
-                .reactionsRemoveAllSelf(message.reactions)
-                .finally(() => {
-                    message.react(
-                        interaction.customId === Button.Undo
-                            ? '☑️'
-                            : reactionEmote,
-                    )
-                })
-
-            frank.utils
-                .reactionsRemoveAllSelf(pendingMessage.reactions)
-                .finally(() => {
-                    pendingMessage.react(reactionEmote)
-                })
-
-            pendingMessage.edit({
-                components: frank.utils.submissionComponents(undo),
-            })
         })
 
         collector.on('end', () => {
