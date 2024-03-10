@@ -34,7 +34,7 @@ const submissionHandler: EventHandler<Message> = {
             isSending = true
             try {
                 collector.resetTimer({ time: 600_000 })
-                interaction.deferUpdate()
+                await interaction.deferUpdate()
 
                 if (interaction.customId === Button.Undo) {
                     undo = false
@@ -84,7 +84,7 @@ const submissionHandler: EventHandler<Message> = {
                         pendingMessage.react(reactionEmote)
                     })
 
-                pendingMessage.edit({
+                await pendingMessage.edit({
                     components: frank.utils.submissionComponents(undo),
                 })
             } finally {
