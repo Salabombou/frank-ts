@@ -8,4 +8,5 @@ export default {
     SINK_CHANNEL_ID: process.env.SINK_CHANNEL_ID as string,
     NSFW_CHANNEL_ID: process.env.NSFW_CHANNEL_ID as string,
     SERIOUS_CHANNEL_ID: process.env.SERIOUS_CHANNEL_ID as string,
+    SUOMI_CHANNEL_ID: process.env.SUOMI_CHANNEL_ID as string,
 }

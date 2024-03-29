@@ -40,10 +40,11 @@ const submissionHandler: EventHandler<Message> = {
                     undo = false
                     reactionEmote = '↩️'
                     submittedMessage?.delete()
+                    submittedMessage = undefined
                 } else if (interaction.customId === Button.Deny) {
                     undo = true
                     reactionEmote = '⛔'
-                } else {
+                } else if (!submittedMessage){
                     undo = true
 
                     let submissionChannel: TextChannel
@@ -59,6 +60,10 @@ const submissionHandler: EventHandler<Message> = {
                         case Button.ApproveSerious:
                             submissionChannel = frank.utils.channels.serious
                             reactionEmote = '✔️'
+                            break
+                        case Button.ApproveSuomi:
+                            submissionChannel = frank.utils.channels.suomi
+                            reactionEmote = '🇫🇮'
                             break
                     }
                     await submissionChannel!

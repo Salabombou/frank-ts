@@ -8,12 +8,9 @@ import {
     EmbedBuilder,
     AttachmentBuilder,
     AttachmentData,
-    MessageCreateOptions,
-    EmbedType,
-    Guild,
+    MessageCreateOptions
 } from 'discord.js'
 import { URL } from 'url'
-import path from 'path'
 import { Frank } from 'structs/discord'
 import { Button } from 'enums'
 import config from 'config'
@@ -21,7 +18,6 @@ import * as crypto from 'crypto'
 import { join } from 'path'
 import { readdirSync } from 'fs'
 import { EventHandler } from 'structs/discord'
-import axios from 'axios'
 
 export class FrankUtils {
     private readonly frank: Frank
@@ -31,6 +27,7 @@ export class FrankUtils {
         approval: TextChannel
         serious: TextChannel
         nsfw: TextChannel
+        suomi: TextChannel
         sink: TextChannel
     }
 
@@ -77,6 +74,13 @@ export class FrankUtils {
                 this.channels.serious = channel as TextChannel
             })
 
+        // Get the suomi channel
+        await this.frank.channels
+            .fetch(this.config.SUOMI_CHANNEL_ID)
+            .then((channel) => {
+                this.channels.suomi = channel as TextChannel
+            })
+
         // Get the sink channel
         await this.frank.channels
             .fetch(this.config.SINK_CHANNEL_ID)
@@ -103,6 +107,11 @@ export class FrankUtils {
             .setLabel('Serious')
             .setStyle(ButtonStyle.Secondary)
             .setDisabled(undo)
+        const approveSuomiButton = new ButtonBuilder()
+            .setCustomId(Button.ApproveSuomi)
+            .setLabel('Suomi')
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(undo)
         const denyButton = new ButtonBuilder()
             .setCustomId(Button.Deny)
             .setLabel('Deny')
@@ -114,6 +123,7 @@ export class FrankUtils {
                 approveButton,
                 approveNsfwButton,
                 approveSeriousButton,
+                approveSuomiButton,
                 denyButton,
             ),
         ]
