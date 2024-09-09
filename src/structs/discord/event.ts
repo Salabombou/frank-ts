@@ -1,6 +1,6 @@
-import { Events } from 'discord.js'
+import { Events } from "discord.js";
 
 export interface EventHandler<T> {
-    name: Events
-    execute: (event: T) => Promise<void>
+    name: Events;
+    execute: (event: T) => Promise<void>;
 }
